@@ -84,7 +84,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://coreinteastarm.blob.core.usgovcloudapi.net/templates/newVM.json",
+          "uri": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/newVM.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
