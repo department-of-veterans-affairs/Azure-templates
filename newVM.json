@@ -1,0 +1,163 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters":
+  {
+    "location":
+    {
+      "type": "string"
+    },
+    "vmName":
+    {
+      "type": "string"
+    },
+    "nicName":
+    {
+      "type": "string"
+    },
+    "vmSize":
+    {
+      "type": "string"
+    },
+    "vmAdminUsername":
+    {
+      "type": "string"
+    },
+    "vmAdminPassword":
+    {
+      "type": "securestring"
+    },
+    "ChocoScriptFolder":
+    {
+      "type": "string"
+    },
+    "ChocoScriptFileName":
+    {
+      "type": "string"
+    },
+    "ChocoScriptURL":
+    {
+      "type": "string"
+    },
+    "CRISPComponentURL":
+    {
+      "type": "string"
+    },    
+    "windowsOSVersion":
+    {
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "allowedValues":
+      [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "2016-Datacenter"
+      ],
+      "metadata":
+      {
+        "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version. Allowed values: 2008-R2-SP1, 2012-Datacenter, 2012-R2-Datacenter."
+      }
+    },
+    "storageSku":
+    {
+      "type": "string",
+      "allowedValues":
+      [
+        "Standard_LRS",
+        "Premium_LRS"
+      ]
+    }
+  },
+  "variables":
+  {
+    "OSDiskName": "[concat(parameters('vmName'),'osdisk')]",
+    "imagePublisher": "MicrosoftWindowsServer",
+    "imageOffer": "WindowsServer"
+  },
+  "resources":
+  [
+    {
+      "apiVersion": "2016-04-30-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('vmName')]",
+      "location": "[parameters('location')]",
+      "tags":
+      {
+        "displayName": "VirtualMachine"
+      },
+      "properties":
+      {
+        "hardwareProfile":
+        {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile":
+        {
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('vmAdminUsername')]",
+          "adminPassword": "[parameters('vmAdminPassword')]",
+          "windowsConfiguration":
+          {
+            "provisionVMAgent": true
+          }
+        },
+        "storageProfile":
+        {
+          "imageReference":
+          {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[parameters('windowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk":
+          {
+            "name": "[variables('OSDiskName')]",
+            "managedDisk":
+            {
+              "storageAccountType": "[parameters('storageSku')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile":
+        {
+          "networkInterfaces":
+          [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nicName'))]"
+            }
+          ]
+        }
+      }
+    },   
+    {
+      "name": "[concat(parameters('vmName'),'/InstallChocoApps')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "[parameters('location')]",
+      "apiVersion": "2017-12-01",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+       ],
+      "tags": {
+        "displayName": "Install Choco Applications"
+      },
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.4",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[parameters('ChocoScriptURL')]"
+          ],
+          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', parameters('ChocoScriptFolder'), '/', parameters('ChocoScriptFileName'), parameters('CRISPComponentURL')]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+  }
+}
