@@ -184,6 +184,12 @@
     },
     "ChocoScriptURL": {
       "type": "string"
+    },
+    "CRISPAgentURL":{
+      "type": "string",
+      "metadata":{
+        "description": "URL where the CRISP components are located"
+      }
     }
   },
   "variables": {    
@@ -308,8 +314,10 @@
           },
           "ChocoScriptURL": {
             "value": "[parameters('ChocoScriptURL')]"
-          }
-        }
+          },
+          "CRISPAgentURL": {
+            "value": "[parameters('CRISPAgentURL')]"
+          }         
       }
     },
     {
@@ -428,6 +436,9 @@
           },
           "ChocoScriptURL": {
             "value": "[parameters('ChocoScriptURL')]"
+          },
+          "CRISPAgentURL": {
+            "value": "[parameters('CRISPAgentURL')]"
           }
         }
       }
