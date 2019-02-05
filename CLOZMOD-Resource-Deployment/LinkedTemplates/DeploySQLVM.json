@@ -79,6 +79,12 @@
     },
     "ChocoScriptFileName": {
       "type": "string"
+    },
+    "CRISPAgentURL":{
+      "type": "string",
+      "metadata":{
+        "description": "URL where the CRISP components are located"
+      }
     }    
   },
   "variables": {
@@ -321,7 +327,7 @@
               "fileUris": [
                 "[parameters('ChocoScriptURL')]"
               ],
-              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('ChocoScriptFolder'), '/', parameters('ChocoScriptFileName'))]"
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('ChocoScriptFolder'), '/', parameters('ChocoScriptFileName'), parameters('CRISPAgentURL')]"
             }
           }
         }
