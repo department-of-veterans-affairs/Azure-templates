@@ -1,0 +1,106 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "String",
+      "metadata": {
+        "description": "Name of the workspace."
+      }
+    },
+    "sku": {
+      "type": "String",
+      "allowedValues": [
+        "Standalone",
+        "PerNode",
+        "PerGB2018"
+      ],
+      "defaultValue": "PerGB2018",
+      "metadata": {
+        "description": "Service tier of the workspace: Standalone, PerNode, PerGB"
+      }
+    },
+    "automationAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the automation account"
+      }
+    },
+    "diagnosticStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the diagnostic storage account"
+      }
+    },
+    "kind": {
+      "type": "string",
+      "defaultValue": "Storage"
+    },
+    "httpsTrafficOnlyEnabled": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "accountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS"
+    }
+  },
+  "variables": {
+    "resourceLocation": "usgovvirginia"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-10-01",
+      "name": "[parameters('diagnosticStorageAccountName')]",
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "[parameters('accountType')]"
+      },
+      "kind": "[parameters('kind')]",
+      "properties": {
+        "supportsHttpsTrafficOnly": "[parameters('httpsTrafficOnlyEnabled')]",
+        "encryption": {
+          "services": {
+            "blob": {
+              "enabled": true
+            },
+            "file": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      },
+      "dependsOn": []
+    },    
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[parameters('workspaceName')]",
+      "apiVersion": "2017-03-15-preview",
+      "location": "[variables('resourceLocation')]",
+      "properties": {
+        "sku": {
+          "Name": "[parameters('sku')]"
+        },
+        "features": {
+          "searchVersion": 1
+        }
+      }
+    },
+    {
+      "name": "[parameters('automationAccountName')]",
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2015-10-31",
+      "properties": {
+        "sku": {
+          "name": "Free",
+          "family": "string",
+          "capacity": "10"
+        }
+      },
+      "location": "[variables('resourceLocation')]",
+      "tags": {}
+    }
+  ]
+  }

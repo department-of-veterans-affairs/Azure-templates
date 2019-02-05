@@ -1,0 +1,366 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "sqlavailabilitySet": {
+      "type": "string"
+    },
+    "sqlvirtualMachineName": {
+      "type": "string"
+    },
+    "virtualMachineSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "keyVaultSettings": {
+      "type": "object",
+      "metadata": {
+        "description": "Settings for the Key Vault"
+      }
+    },
+    "Network": {
+      "type": "string",
+      "metadata": {
+        "description": "Network information for the Virtual Machines"
+      }      
+    },
+    "sqlConnectivityType": {
+      "type": "string"
+    },
+    "sqlPortNumber": {
+      "type": "int"
+    },
+    "sqlStorageDisksCount": {
+      "type": "int"
+    },
+    "sqlStorageWorkloadType": {
+      "type": "string"
+    },
+    "sqlStorageDisksConfigurationType": {
+      "type": "string"
+    },
+    "sqlStorageStartingDeviceId": {
+      "type": "int"
+    },
+    "sqlStorageDeploymentToken": {
+      "type": "int"
+    },
+    "rServicesEnabled": {
+      "type": "string"
+    },
+    "subnetStartAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The first available IP address in the subnet"
+      }
+    },
+    "diagnosticStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name the storage account to use for diagnostics"
+      }
+    },
+    "automationAccountName": {
+      "type": "string"
+    },
+    "logAnalyticsWorkspaceName": {
+      "type": "string"
+    },
+    "ChocoScriptURL": {
+      "type": "string"
+    },
+    "ChocoScriptFileName": {
+      "type": "string"
+    }    
+  },
+  "variables": {
+    "ChocoScriptFolder": ".",
+    "ConfigurationName": "WebandSQLConfig",
+    "configurationModeFrequencyMins": "240",
+    "refreshFrequencyMins": "720",
+    "virtualNetworkResourceGroup": "[split(parameters('Network'), ' | ')[2]]",
+    "virtualNetworkName": "[split(parameters('Network'), ' | ')[3]]",
+    "subnetName": "[split(parameters('Network'), ' | ')[4]]",
+    "vnetID": "[resourceId(variables('virtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/', variables('subnetName'))]",
+    "subnetIPOctects": "[split(parameters('subnetStartAddress'),'.')]",
+    "subnetIPPrefix": "[concat(variables('subnetIPOctects')[0], '.', variables('subnetIPOctects')[1], '.', variables('subnetIPOctects')[2], '.')]",
+    "subnetIPSuffix": "[int(variables('subnetIPOctects')[3])]",
+    "networkInterfaceName": "[concat(toLower(parameters('sqlvirtualMachineName')), '_nic')]",
+    "updateDomainCount": 5,
+    "faultDomainCount": 2,
+    "diagStorageAccountId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/','Microsoft.Storage/storageAccounts/', parameters('diagnosticStorageAccountName'))]",
+    "wadlogs": "<WadCfg> <DiagnosticMonitorConfiguration overallQuotaInMB=\"4096\" xmlns=\"http://schemas.microsoft.com/ServiceHosting/2010/10/DiagnosticsConfiguration\"> <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter=\"Error\"/> <WindowsEventLog scheduledTransferPeriod=\"PT1M\" > <DataSource name=\"Application!*[System[(Level = 1 or Level = 2)]]\" /> <DataSource name=\"Security!*[System[(Level = 1 or Level = 2)]]\" /> <DataSource name=\"System!*[System[(Level = 1 or Level = 2)]]\" /></WindowsEventLog>",
+    "wadperfcounters1": "<PerformanceCounters scheduledTransferPeriod=\"PT0S\"><PerformanceCounterConfiguration counterSpecifier=\"\\Processor(_Total)\\% Processor Time\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU percentage guest OS\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor(_Total)\\% Interrupt Time\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU interrupt time\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor(_Total)\\% Privileged Time\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU privileged time\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor Information(_Total)\\Parking Status\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"CPU parking status\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor(_Total)\\% User Time\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"CPU user time\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor Information(_Total)\\% Processor Performance\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Processor percent perf.\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Processor Information(_Total)\\Processor Frequency\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Processor frequency\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\System\\Threads\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Threads\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\System\\Processes\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Processes\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Thread(_Total)\\Context Switches/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Context switches\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Committed Bytes\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Memory committed\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Available Bytes\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Memory available\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\% Committed Bytes In Use\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Memory percentage\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Cache Faults/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Cache faults\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Page Faults/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Page faults\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Page Reads/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Page reads\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Pages/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Memory pages\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Transition Faults/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Transition faults\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Pool Paged Bytes\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Paged pool\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Memory\\Pool Nonpaged Bytes\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Non-paged pool\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\% Processor Time\" sampleRate=\"PT15S\" unit=\"Percent\"><annotation displayName=\"Process total time\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\Page Faults/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Process page faults\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\Thread Count\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Process total threads\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\Handle Count\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Process total handles\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\Private Bytes\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Process function bytes\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\Working Set\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Process working set\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Process(_Total)\\Working Set - Private\" sampleRate=\"PT15S\" unit=\"Bytes\"><annotation displayName=\"Process function working set\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk(_Total)\\Disk Read Bytes/sec\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk read guest OS\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\PhysicalDisk(_Total)\\Disk Write Bytes/sec\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Disk write guest OS\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Web Service(_Total)\\Bytes Total/Sec\" sampleRate=\"PT15S\" unit=\"BytesPerSecond\"><annotation displayName=\"Web service bytes\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Web Service(_Total)\\ISAPI Extension Requests/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"ISAPI extension requests\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Web Service(_Total)\\Connection Attempts/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Web connection attempts\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Web Service(_Total)\\Current Connections\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"Web current connections\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Web Service(_Total)\\Get Requests/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Web get requests\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\Web Service(_Total)\\Post Requests/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"Web post requests\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\TCPv4\\Connections Established\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"TCP connections established\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\TCPv4\\Connection Failures\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"TCP connections failed\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\TCPv4\\Connections Reset\" sampleRate=\"PT15S\" unit=\"Count\"><annotation displayName=\"TCP connections reset\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\TCPv4\\Segments Sent/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"TCP segments sent\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\TCPv4\\Segments Received/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"TCP segments received\" locale=\"en-us\" /></PerformanceCounterConfiguration><PerformanceCounterConfiguration counterSpecifier=\"\\TCPv4\\Segments Retransmitted/sec\" sampleRate=\"PT15S\" unit=\"CountPerSecond\"><annotation displayName=\"TCP seg. restransmitted\" locale=\"en-us\" /></PerformanceCounterConfiguration></PerformanceCounters>",
+    "wadcfgxstart": "[concat(variables('wadlogs'), variables('wadperfcounters1'), '<Metrics resourceId=\"')]",
+    "wadmetricsresourceid": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name , '/providers/', 'Microsoft.Compute/virtualMachines/')]",
+    "wadcfgxend": "\"><MetricAggregation scheduledTransferPeriod=\"PT1H\"/><MetricAggregation scheduledTransferPeriod=\"PT1M\"/></Metrics></DiagnosticMonitorConfiguration></WadCfg>"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[parameters('sqlavailabilitySet')]",
+      "apiVersion": "2018-06-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "platformUpdateDomainCount": "[variables('updateDomainCount')]",
+        "platformFaultDomainCount": "[variables('faultDomainCount')]",
+        "virtualMachines": []
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "name": "[toUpper(parameters('sqlvirtualMachineName'))]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-04-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
+        "[resourceId('Microsoft.Compute/availabilitySets', parameters('sqlavailabilitySet'))]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('sqlavailabilitySet'))]"
+        },
+        "osProfile": {
+          "computerName": "[toUpper(parameters('sqlvirtualMachineName'))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "timeZone": "Central Standard Time",
+            "provisionVmAgent": "true"
+          }
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "SQL2014SP2-WS2012R2",
+            "sku": "Standard",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+          },
+          "dataDisks": [
+            {
+              "createOption": "empty",
+              "lun": 0,
+              "diskSizeGB": "50",
+              "caching": "ReadOnly",
+              "managedDisk": {
+                "storageAccountType": "Premium_LRS"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('networkInterfaceName')))]"
+            }
+          ]
+        },
+        "licenseType": "Windows_Server",
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[concat('https://', parameters('diagnosticStorageAccountName'), '.blob.core.usgovcloudapi.net/')]"
+          }
+        }
+      },
+      "resources": [
+        {
+          "comments": "DSC extension config for WebServer",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('sqlvirtualMachineName'), '/PowershellDSCSQLTemplate')]",
+          "apiVersion": "2017-03-30",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('sqlvirtualMachineName'))]"
+          ],
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.75",
+            "autoUpgradeMinorVersion": true,
+            "protectedSettings": {
+              "Items": {
+                "registrationKeyPrivate": "[listKeys(resourceId('Microsoft.Automation/automationAccounts/', parameters('automationAccountName')), '2015-01-01-preview').Keys[0].value]"
+              }
+            },
+            "settings": {
+              "Properties": [
+                {
+                  "Name": "RegistrationKey",
+                  "Value": {
+                    "UserName": "PLACEHOLDER_DONOTUSE",
+                    "Password": "PrivateSettingsRef:registrationKeyPrivate"
+                  },
+                  "TypeName": "System.Management.Automation.PSCredential"
+                },
+                {
+                  "Name": "RegistrationUrl",
+                  "Value": "[reference(concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))).registrationUrl]",
+                  "TypeName": "System.String"
+                },
+                {
+                  "Name": "NodeConfigurationName",
+                  "Value": "[concat(variables('ConfigurationName'),'.','SQLServer')]",
+                  "TypeName": "System.String"
+                },
+                {
+                  "Name": "ConfigurationMode",
+                  "Value": "ApplyandAutoCorrect",
+                  "TypeName": "System.String"
+                },
+                {
+                  "Name": "RebootNodeIfNeeded",
+                  "Value": true,
+                  "TypeName": "System.Boolean"
+                },
+                {
+                  "Name": "ActionAfterReboot",
+                  "Value": "ContinueConfiguration",
+                  "TypeName": "System.String"
+                },
+                {
+                  "Name": "ConfigurationModeFrequencyMins",
+                  "Value": "[variables('configurationModeFrequencyMins')]",
+                  "TypeName": "System.Int32"
+                },
+                {
+                  "Name": "RefreshFrequencyMins",
+                  "Value": "[variables('refreshFrequencyMins')]",
+                  "TypeName": "System.Int32"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Microsoft.Insights.VMDiagnosticsSettings",
+          "type": "extensions",
+          "location": "[parameters('location')]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('sqlvirtualMachineName'))]"
+          ],
+          "tags": {
+            "displayName": "AzureDiagnostics"
+          },
+          "properties": {
+            "publisher": "Microsoft.Azure.Diagnostics",
+            "type": "IaaSDiagnostics",
+            "typeHandlerVersion": "1.5",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "xmlCfg": "[base64(concat(variables('wadcfgxstart'), variables('wadmetricsresourceid'), parameters('sqlvirtualMachineName'), variables('wadcfgxend')))]",
+              "storageAccount": "[parameters('diagnosticStorageAccountName')]"
+            },
+            "protectedSettings": {
+              "storageAccountName": "[parameters('diagnosticStorageAccountName')]",
+              "storageAccountKey": "[listkeys(variables('diagStorageAccountId'), '2015-06-15').key1]",
+              "storageAccountEndPoint": "https://core.windows.net"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "name": "[concat(parameters('sqlvirtualMachineName'), '/OMSExtension')]",
+          "apiVersion": "2015-06-15",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('sqlvirtualMachineName'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+            "type": "MicrosoftMonitoringAgent",
+            "typeHandlerVersion": "1.0",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "workspaceId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('logAnalyticsWorkspaceName')), '2015-03-20').customerId]"
+            },
+            "protectedSettings": {
+              "workspaceKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('logAnalyticsWorkspaceName')), '2015-03-20').primarySharedKey]"
+            }
+          }
+        },
+        {
+          "name": "[concat(parameters('sqlvirtualMachineName'),'/InstallChocoApps')]",
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "location": "[parameters('location')]",
+          "apiVersion": "2017-12-01",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('sqlvirtualMachineName'))]"
+          ],
+          "tags": {
+            "displayName": "Install Choco Applications"
+          },
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.4",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "[parameters('ChocoScriptURL')]"
+              ],
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('ChocoScriptFolder'), '/', parameters('ChocoScriptFileName'))]"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "comments": "Automation account for DSC",
+      "apiVersion": "2015-10-31",
+      "location": "usgovvirginia",
+      "name": "[parameters('automationAccountName')]",
+      "type": "Microsoft.Automation/automationAccounts",
+      "properties": {
+        "sku": {
+          "name": "Basic"
+        }
+      }
+    },
+    {
+      "name": "[variables('networkInterfaceName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-04-01",
+      "location": "[resourceGroup().location]",      
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat(variables('subnetIPPrefix'), add(variables('subnetIPSuffix'), 1))]",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": []
+        }
+      }
+    }    
+  ]
+}

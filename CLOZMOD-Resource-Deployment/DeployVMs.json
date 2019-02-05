@@ -1,0 +1,443 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure region for the VMs"
+      }
+    },
+    "automationAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The automation account used for DSC configuration"
+      }
+    },
+    "webVirtualMachineName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the iIS Application Server"
+      }
+    },
+    "sqlVirtualMachineName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the SQL Server VM"
+      }
+    },
+    "webavailabilitySet": {
+      "type": "string",
+      "defaultValue": "as_",
+      "metadata": {
+        "description": "Name of the availability set for the Web Server"
+      }
+    },
+    "sqlavailabilitySet": {
+      "type": "string",
+      "defaultValue": "as_",
+      "metadata": {
+        "description": "Name of the availability set for the SQL Server"
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Azure Key Vault"
+      }
+    },
+    "virtualMachineSize": {
+      "type": "string",
+      "defaultValue": "Standard_DS2_v2_Promo",
+      "metadata": {
+        "description": "The size of the VMs. These will all be Standard_DS2_v2_Promo"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The admin account name for the VMs"
+      }
+    },    
+    "subnetStartAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The first available IP address in the subnet"
+      }
+    },
+    "Network": {
+      "type": "string",
+      "metadata": {
+        "description": "Network information for the Virtual Machines. Network info must be provided in the following format "Subscription Name | Region Name (e.g. USGOV Texas | Network ResourceGroup Name | VirtualNetworkName | SubnetName | Subnet (CIDR)"
+      }      
+    },
+    "diagnosticStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name the storage account to use for diagnostics"
+      }
+    },
+    "backupVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the backup vault that will be used for IaaS VM backup"
+      }
+    },
+    "backupPolicyName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the policy that will be used for backing up the VMs"
+      }
+    },
+    "logAnalyticsWorkspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Log Analytics workspace to which these VMs will be connected"
+      }
+    },
+    "keyVaultSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Key Vault secret to use for the VM and domain Passwords"
+      }
+    },    
+    "sqlConnectivityType": {
+      "type": "string",
+      "defaultValue": "Private"
+    },
+    "sqlPortNumber": {
+      "type": "int",
+      "defaultValue": 1433
+    },
+    "sqlStorageDisksCount": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "sqlStorageWorkloadType": {
+      "type": "string",
+      "defaultValue": "GENERAL"
+    },
+    "sqlStorageDisksConfigurationType": {
+      "type": "string",
+      "defaultValue": "NEW"
+    },
+    "sqlStorageStartingDeviceId": {
+      "type": "int",
+      "defaultValue": 2
+    },
+    "sqlStorageDeploymentToken": {
+      "type": "int",
+      "defaultValue": 58941
+    },    
+    "rServicesEnabled": {
+      "type": "string",
+      "defaultValue": "false"
+    },
+    "backupscheduleRunTimes": {
+      "type": "array",
+      "metadata": {
+        "description": "Times in day when backup should be triggered. e.g. 01:00, 13:00. This will be used in LTR too for daily, weekly, monthly and yearly backup."
+      }
+    },
+    "timeZone": {
+      "type": "string",
+      "metadata": {
+        "description": "Time zone for the backup policy. Setting to Eastern time by default"
+      }
+    },
+    "backupdailyRetentionDurationCount": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "Number of days to retain the daily backups"
+      }
+    },
+    "backupdaysOfTheWeek": {
+      "type": "array",
+      "metadata": {
+        "description": "Days of the week to run the weekly backups"
+      }
+    },
+    "backupweeklyRetentionDurationCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of weeks to retain the weekly backups"
+      }
+    },
+    "backupmonthlyRetentionDurationCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of months to retain the monthly backups"
+      }
+    },
+    "backupmonthsOfYear": {
+      "type": "array",
+      "metadata": {
+        "description": "Months of the year to run a monthly backup"
+      }
+    },
+    "backupyearlyRetentionDurationCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of years to retain the yearly backups"
+      }
+    },
+    "ChocoScriptURL": {
+      "type": "string"
+    }
+  },
+  "variables": {    
+    "keyVaultSettings": {
+      "name": "[parameters('keyVaultName')]",
+      "resourceGroup": "[resourceGroup().name]",
+      "secret": "[parameters('keyVaultSecretName')]"
+    },
+    "keyVaultRef": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
+    "vmNameandConfigType": [
+      {
+        "vmName": "[parameters('webVirtualMachineName')]",
+        "nodeType": "WebServer"
+      },
+      {
+        "vmName": "[parameters('sqlVirtualMachineName')]",
+        "nodeType": "SQLServer"
+      }
+    ],
+    "ChocoScriptFileName": "InstallChocoApps.ps1"        
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-07-01",
+      "name": "DeployRSVault",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.github.com",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "rsVaultName": {
+            "value": "[parameters('backupVaultName')]"
+          },
+          "scheduleRunTimes": {
+            "value": "[parameters('backupscheduleRunTimes')]"
+          },
+          "timeZone": {
+            "value": "[parameters('timeZone')]"
+          },
+          "policyName": {
+            "value": "[parameters('backupPolicyName')]"
+          },
+          "daysOfTheWeek": {
+            "value": "[parameters('backupdaysOfTheWeek')]"
+          },
+          "dailyRetentionDurationCount": {
+            "value": "[parameters('backupdailyRetentionDurationCount')]"
+          },
+          "weeklyRetentionDurationCount": {
+            "value": "[parameters('backupweeklyRetentionDurationCount')]"
+          },
+          "monthlyRetentionDurationCount": {
+            "value": "[parameters('backupmonthlyRetentionDurationCount')]"
+          },
+          "monthsOfYear": {
+            "value": "[parameters('backupmonthsOfYear')]"
+          },
+          "yearlyRetentionDurationCount": {
+            "value": "[parameters('backupyearlyRetentionDurationCount')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-07-01",
+      "name": "[concat(parameters('webVirtualMachineName'), '-DeployWindowsVM')]",
+      "type": "Microsoft.Resources/deployments",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.github.com",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[resourceGroup().location]"
+          },          
+          "Network": {
+            "value": "[parameters('Network')]"
+          },
+          "subnetStartAddress": {
+            "value": "[parameters('subnetStartAddress')]"
+          },
+          "virtualMachineSize": {
+            "value": "[parameters('virtualMachineSize')]"
+          },
+          "adminUserName": {
+            "value": "[parameters('adminUserName')]"
+          },
+          "adminPassword": {
+            "reference": {
+              "keyVault": {
+                "id": "[variables('keyVaultRef')]"
+              },
+              "secretName": "[parameters('keyVaultSecretName')]"
+            }
+          },
+          "diagnosticStorageAccountName": {
+            "value": "[parameters('diagnosticStorageAccountName')]"
+          },
+          "webvirtualMachineName": {
+            "value": "[parameters('webVirtualMachineName')]"
+          },
+          "keyVaultSettings": {
+            "value": "[variables('keyVaultSettings')]"
+          },
+          "webavailabilitySet": {
+            "value": "[parameters('webavailabilitySet')]"
+          },
+          "automationAccountName": {
+            "value": "[parameters('automationAccountName')]"
+          },
+          "logAnalyticsWorkspaceName": {
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
+          },
+          "ChocoScriptFileName": {
+            "value": "[variables('ChocoScriptFileName')]"
+          },
+          "ChocoScriptURL": {
+            "value": "[parameters('ChocoScriptURL')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-07-01",
+      "name": "[concat(variables('vmNameandConfigType')[copyIndex()].vmName, '-DeployAzureBackup')]",
+      "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "DeployRSVault",
+        "[concat(parameters('webVirtualMachineName'), '-DeployWindowsVM')]",
+        "[concat(parameters('sqlVirtualMachineName'), '-DeploySQLVM')]"
+      ],
+      "copy": {
+        "name": "BackupTemplateLoop",
+        "count": "[length(variables('vmNameandConfigType'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.github.com",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "backupVaultName": {
+            "value": "[parameters('backupVaultName')]"
+          },
+          "backupPolicyName": {
+            "value": "[parameters('backupPolicyName')]"
+          },
+          "virtualMachineName": {
+            "value": "[variables('vmNameandConfigType')[copyIndex()].vmName]"
+          },
+          "vmResourceGroup": {
+            "value": "[resourceGroup().name]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-07-01",
+      "name": "[concat(variables('vmNameandConfigType')[1].vmName, '-DeploySQLVM')]",
+      "type": "Microsoft.Resources/deployments",      
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.github.com",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[resourceGroup().location]"
+          },         
+          "Network": {
+            "value": "[parameters('Network')]"
+          },
+          "virtualMachineSize": {
+            "value": "[parameters('virtualMachineSize')]"
+          },
+          "adminUserName": {
+            "value": "[parameters('adminUserName')]"
+          },
+          "adminPassword": {
+            "reference": {
+              "keyVault": {
+                "id": "[variables('keyVaultRef')]"
+              },
+              "secretName": "[parameters('keyVaultSecretName')]"
+            }
+          },
+          "diagnosticStorageAccountName": {
+            "value": "[parameters('diagnosticStorageAccountName')]"
+          },
+          "sqlvirtualMachineName": {
+            "value": "[parameters('sqlVirtualMachineName')]"
+          },
+          "keyVaultSettings": {
+            "value": "[variables('keyVaultSettings')]"
+          },
+          "sqlConnectivityType": {
+            "value": "[parameters('sqlConnectivityType')]"
+          },
+          "sqlPortNumber": {
+            "value": "[parameters('sqlPortNumber')]"
+          },
+          "sqlStorageDisksCount": {
+            "value": "[parameters('sqlStorageDisksCount')]"
+          },
+          "sqlStorageWorkloadType": {
+            "value": "[parameters('sqlStorageWorkloadType')]"
+          },
+          "sqlStorageDisksConfigurationType": {
+            "value": "[parameters('sqlStorageDisksConfigurationType')]"
+          },
+          "sqlStorageStartingDeviceId": {
+            "value": "[parameters('sqlStorageStartingDeviceId')]"
+          },
+          "sqlStorageDeploymentToken": {
+            "value": "[parameters('sqlStorageDeploymentToken')]"
+          },
+          "rServicesEnabled": {
+            "value": "[parameters('rServicesEnabled')]"
+          },
+          "subnetStartAddress": {
+            "value": "[parameters('subnetStartAddress')]"
+          },
+          "sqlavailabilitySet": {
+            "value": "[parameters('sqlavailabilitySet')]"
+          },
+          "automationAccountName": {
+            "value": "[parameters('automationAccountName')]"
+          },
+          "logAnalyticsWorkspaceName": {
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
+          },
+          "ChocoScriptFileName": {
+            "value": "[variables('ChocoScriptFileName')]"
+          },
+          "ChocoScriptURL": {
+            "value": "[parameters('ChocoScriptURL')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
+}
+
