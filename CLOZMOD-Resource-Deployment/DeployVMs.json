@@ -68,7 +68,7 @@
     "Network": {
       "type": "string",
       "metadata": {
-        "description": "Network information for the Virtual Machines. Network info must be provided in the following format "Subscription Name | Region Name (e.g. USGOV Texas | Network ResourceGroup Name | VirtualNetworkName | SubnetName | Subnet (CIDR)"
+        "description": "Network information for the Virtual Machines. Network info must be provided in the following format \"Subscription Name | Region Name (e.g. USGOV Texas | Network ResourceGroup Name | VirtualNetworkName | SubnetName | Subnet (CIDR)\""
       }      
     },
     "diagnosticStorageAccountName": {
@@ -213,7 +213,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.github.com",
+          "uri": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/CLOZMOD-Resource-Deployment/LinkedTemplates/DeployRSVault.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -258,7 +258,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.github.com",
+          "uri": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/CLOZMOD-Resource-Deployment/LinkedTemplates/DeployWindowsVM.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -328,7 +328,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.github.com",
+          "uri": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/CLOZMOD-Resource-Deployment/LinkedTemplates/DeployAzureBackup.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -354,7 +354,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.github.com",
+          "uri": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/CLOZMOD-Resource-Deployment/LinkedTemplates/DeploySQLVM.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
