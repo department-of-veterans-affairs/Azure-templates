@@ -28,7 +28,7 @@ Invoke-Expression C:\Temp\Agents\chocolatey\chocolateyInstall.ps1
 #Assign Packages to Install
 $Packages = 'bigfixagent.9.2.6.94.nupkg', `
     'encasesafe.7.07.nupkg', `
-    'safenet.5.1.88.0.nupkg', `
+    'safenet.10.2.nupkg', `
     'wincollect.7.2.5.nupkg', `
     'McAfeeAgent.4.8.0.2001.nupkg'
 
