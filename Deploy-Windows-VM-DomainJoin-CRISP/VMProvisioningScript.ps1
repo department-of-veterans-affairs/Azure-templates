@@ -1,4 +1,4 @@
-﻿param (
+param (
     
     [string]$agentURI,
     [string]$groupToAdd
