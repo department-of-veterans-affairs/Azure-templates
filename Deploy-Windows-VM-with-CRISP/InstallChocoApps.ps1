@@ -1,5 +1,4 @@
 param (
-        
         [string]$agentURI
     )
     
@@ -37,22 +36,16 @@ unzip "$AgentsTemp\agents.zip" $AgentsTemp
     
 #Install Chocolatey
 Set-ExecutionPolicy Bypass -Scope Process -Force
-Invoke-Expression C:\Temp\Agents\chocolatey\chocolateyInstall.ps1
-    
-#Assign Packages to Install
-$Packages = 'bigfixagent.9.5.nupkg', `
-        'encasesafe.7.07.nupkg', `
-        'mcafeeagent.5.5.nupkg', `
-        'safenet.10.2.nupkg', `
-        'wincollect.7.2.5.nupkg'
-    
+Invoke-Expression $agentsTemp\chocolatey\chocolateyInstall.ps1
+
+$pkgToInstall=Get-ChildItem $agentsTemp | where {$_.name -like '*.nupkg'}
+
 #Install Packages
-Set-Location C:\Temp\Agents
-    
-ForEach ($PackageName in $Packages){
-        WriteLog "Installing Package $PackageName"
-        choco install $PackageName -y -dv -s . 
-    }
+Set-Location $sagentsTemp
+ForEach ($pkg in $pkgToInstall) { 
+        WriteLog "Installing Package $pkg.name"
+        choco install $pkg.name -y -dv -s . 
+        }
 
 
 
