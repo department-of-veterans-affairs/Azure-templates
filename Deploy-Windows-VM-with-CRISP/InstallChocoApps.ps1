@@ -3,8 +3,7 @@ param (
         [string]$agentURI
     )
     
-    function WriteLog
-    {
+function WriteLog {
         Param(
             $message
         )
@@ -14,46 +13,45 @@ param (
         }
     }
     
-    WriteLog "Script Begin"
+WriteLog "Script Begin"
     
-    WriteLog "Agent URL: $agentURI"
+WriteLog "Agent URL: $agentURI"
     
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
+Add-Type -AssemblyName System.IO.Compression.FileSystem
     
-    function unzip {
-        param( [string]$ziparchive, [string]$extractpath )
-        [System.IO.Compression.ZipFile]::ExtractToDirectory( $ziparchive, $extractpath )
+function unzip {
+     param( [string]$ziparchive, [string]$extractpath )
+     [System.IO.Compression.ZipFile]::ExtractToDirectory( $ziparchive, $extractpath )
     }
     
-    $agentsTemp = "C:\Temp\Agents"
+$agentsTemp = "C:\Temp\Agents"
     
-    #Create Temp Directory
-    New-Item -ItemType Directory -Path $AgentsTemp -Force -Confirm: $false -Verbose
+#Create Temp Directory
+New-Item -ItemType Directory -Path $AgentsTemp -Force -Confirm: $false -Verbose
     
-    #Download Installers Zip File
-    Invoke-WebRequest -Uri $agentURI -OutFile "$AgentsTemp\agents.zip" -Verbose
+#Download Installers Zip File
+Invoke-WebRequest -Uri $agentURI -OutFile "$AgentsTemp\agents.zip" -Verbose
     
-    #Extracting Zip File
-    unzip "$AgentsTemp\agents.zip" $AgentsTemp
+#Extracting Zip File
+unzip "$AgentsTemp\agents.zip" $AgentsTemp
     
-    #Install Chocolatey
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    Invoke-Expression C:\Temp\Agents\chocolatey\chocolateyInstall.ps1
+#Install Chocolatey
+Set-ExecutionPolicy Bypass -Scope Process -Force
+Invoke-Expression C:\Temp\Agents\chocolatey\chocolateyInstall.ps1
     
-    #Assign Packages to Install
-    $Packages = 'bigfixagent.9.5.nupkg', `
+#Assign Packages to Install
+$Packages = 'bigfixagent.9.5.nupkg', `
         'encasesafe.7.07.nupkg', `
         'mcafeeagent.5.5.nupkg', `
         'safenet.10.2.nupkg', `
         'wincollect.7.2.5.nupkg'
     
-    #Install Packages
-    Set-Location C:\Temp\Agents
+#Install Packages
+Set-Location C:\Temp\Agents
     
-    ForEach ($PackageName in $Packages){
-        
-         WriteLog "Installing Package $PackageName"
-         choco install $PackageName -y -dv -s . 
+ForEach ($PackageName in $Packages){
+        WriteLog "Installing Package $PackageName"
+        choco install $PackageName -y -dv -s . 
     }
 
 
