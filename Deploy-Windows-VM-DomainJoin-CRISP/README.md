@@ -25,6 +25,6 @@ To deploy the template, you will need to provide the following parameters:
 - crispComponentURI (Location of the CRISP components. See deployment doc for details)
 - vmStartInstanceSuffix (The number at which to begin numbering your VM. Should match the environment i.e. DEVTEST would be 900)
 
-<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FFAzure-templates%2FFmaster%2FDeploy-Windows-VM-DomainJoin-CRISP%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FAzure-templates%2Fmaster%2FDeploy-Windows-VM-DomainJoin-CRISP%2Fazuredeploy.json" target="_blank">
     <img src="https://azuredeploy.net/AzureGov.png"/>
 </a>
