@@ -3,6 +3,9 @@
     "contentVersion": "1.0.0.0",
     "parameters":
     {        
+        "location": {
+          "value": "usgovvirginia"
+        },
         "vmSize": {
           "value": "Standard_D2_v2"
         },
