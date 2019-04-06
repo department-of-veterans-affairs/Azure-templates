@@ -133,13 +133,7 @@
         "metadata": {
             "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
         }
-    },
-    "artifactsLocation": {
-        "type": "string",
-        "metadata": {
-            "description": "Location of the VM provisioning script"
-        }
-    }
+    }    
 },
 "variables": {
     "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/scripts",
@@ -302,7 +296,7 @@
                "autoUpgradeMinorVersion": true,
                "settings": {
                  "fileUris": [
-                   "[concat(variables('artifactsLocation'), '/', variables('provisioningScriptFileName')]"
+                   "[concat(variables('artifactsLocation'), '/', variables('provisioningScriptFileName'))]"
                  ],
                  "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('provisioningScriptFolder'), '/', variables('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
                }
