@@ -142,6 +142,8 @@
     "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
     "provisioningScriptFolder": ".",
     "provisioningScriptFileName": "VMProvisioningScript.ps1",
+    "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
+    "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]",
     "domainPassword": {
         "reference": {
             "keyVault": {
