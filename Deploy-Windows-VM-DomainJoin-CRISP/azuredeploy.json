@@ -63,6 +63,9 @@
         "metadata": {
             "description": "Name of the domain to join."
         }
+    },
+    "domainUserName": {
+      "type": "string"
     },   
     "crispComponentURI": {
         "type": "string",
@@ -269,7 +272,7 @@
                {
                  "Name": "[parameters('domainToJoin')]",
                  "OUPath": "[parameters('ouPath')]",
-                 "User": "[concat(parameters('domainToJoin'), '\\', variables('domainUsername'))]",
+                 "User": "[concat(parameters('domainToJoin'), '\\', parameters('domainUsername'))]",
                  "Restart": "false",
                  "Options": "[variables('domainJoinOptions')]"
                },
