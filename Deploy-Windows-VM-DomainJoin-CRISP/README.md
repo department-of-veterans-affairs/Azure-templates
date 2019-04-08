@@ -7,25 +7,26 @@ For information on how to use this template, please see https://docs.ec.va.gov/C
 
 To deploy the template, you will need to provide the following parameters:
 
-- vmName (Use the proper naming convention documented @ https://docs.ec.va.gov/Enterprise-Cloud/Microsoft-Azure/Azure-Naming-Standards.html)
-- vmSize (Default is Standard_D2_v2)
-- numberOfServersToDeploy
-- ResourceGroupName
-- existingVNETName
-- existingVNETResourceGroupName
-- subnetName
-- keyVaultName (See internal deployment guide for details)
-- keyVaultSecretName (See internal deployment guide for details)
-- keyVaultResourceGroupName (See internal deployment guide for details)
-- location (Can be usgovvirginia, usgovtexas, usgovarizona)
-- VmAdminUserName (This is the local admin account name)
-- vmAdminPassword (This will be used as the local admin password) 
-- domainToJoin (Default is va.gov)
-- domainGroupToAdd (This will be the name of the domain group provided to your project)
-- ouPath (This is the Organizational Unit where the VM will be added when it is joined to the domain)
-- WindowsOSVersion (Either 2012-R2-Datacenter or 2016-Datacenter)
-- crispComponentURI (Location of the CRISP components. See deployment doc for details)
-- vmStartInstanceSuffix (The number at which to begin numbering your VM. Should match the environment i.e. DEVTEST would be 900)
+- Location (Can be usgovvirginia, usgovtexas, usgovarizona)
+- VM Name (Use the proper naming convention documented @ https://docs.ec.va.gov/Enterprise-Cloud/Microsoft-Azure/Azure-Naming-Standards.html)
+- VM Start Instance Suffix (The number at which to begin numbering your VM. Should match the environment, i.e. DEV, PROD)
+- VM Size (Default is Standard_D2_v2)
+- Windows OS Version (Either 2012-R2-Datacenter or 2016-Datacenter)
+- Number of Servers to Deploy
+- Resource Group Name
+- Existing VNET Name
+- Existing VNET Resource Group
+- Subnet Name
+- Key Vault Name (See internal deployment guide for details)
+- Key Vault Secret Name (See internal deployment guide for details)
+- Key Vault Resource Group Name (See internal deployment guide for details)
+- Key Vault Subscription Id
+- VM Admin UserName (Local admin account name. Will be renamed after domain join)
+- VM Admin Password 
+- Domain To Join (Default is va.gov)
+- Domain Group To Add (This will be the name of the domain group provided to your project)
+- OU Path (This is the Organizational Unit where the VM will be added when it is joined to the domain)
+- CRISP Component URI (Location of the CRISP components. See deployment doc for details)
 
 <a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FAzure-templates%2Fmaster%2FDeploy-Windows-VM-DomainJoin-CRISP%2Fazuredeploy.json" target="_blank">
     <img src="https://azuredeploy.net/AzureGov.png"/>
