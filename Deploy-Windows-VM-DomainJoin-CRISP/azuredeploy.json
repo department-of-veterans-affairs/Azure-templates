@@ -271,11 +271,11 @@
                  "OUPath": "[parameters('ouPath')]",
                  "User": "[concat(parameters('domainToJoin'), '\\', variables('domainUsername'))]",
                  "Restart": "false",
-                 "Options": "[parameters('domainJoinOptions')]"
+                 "Options": "[variables('domainJoinOptions')]"
                },
                "protectedSettings":
                {
-                 "Password": "[parameters('domainPassword')]"
+                 "Password": "[variables('domainPassword')]"
                }
              }
            },
