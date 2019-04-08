@@ -269,7 +269,7 @@
                {
                  "Name": "[parameters('domainToJoin')]",
                  "OUPath": "[parameters('ouPath')]",
-                 "User": "[concat(parameters('domainToJoin'), '\\', parameters('domainUsername'))]",
+                 "User": "[concat(parameters('domainToJoin'), '\\', variables('domainUsername'))]",
                  "Restart": "false",
                  "Options": "[parameters('domainJoinOptions')]"
                },
