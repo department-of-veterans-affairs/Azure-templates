@@ -3,6 +3,8 @@
 This template deploys one or more Windows VMs (either Server 2012 R2 Datacenter or Server 2016 Datacenter), installs all required CRISP components and then joins the machine(s) to the domain of your choice.
 Before you can deploy the template, your program must have been onboarded to Azure and provided with a 3 digit program code. You will also need the name of the resource group, virtual network, and subnet that was provided to your project.
 
+For information on how to use this template, please see https://docs.ec.va.gov/Cloud-Learning/Azure/Deployment/Deploying-A-VA-Windows-VM-To-Azure.html
+
 To deploy the template, you will need to provide the following parameters:
 
 - vmName (Use the proper naming convention documented @ https://docs.ec.va.gov/Enterprise-Cloud/Microsoft-Azure/Azure-Naming-Standards.html)
