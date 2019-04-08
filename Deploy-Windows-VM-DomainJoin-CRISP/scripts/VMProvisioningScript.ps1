@@ -1,8 +1,8 @@
 ﻿param (
     #Location of CRISP components
-    [string]$agentURI='https://coreinteastarm.blob.core.usgovcloudapi.net/templates/ChocolateyPackages.zip?sp=r&st=2019-04-08T13:50:18Z&se=2019-04-08T21:50:18Z&spr=https&sv=2018-03-28&sig=MGNSdmwRcr9hKXFDTVoCA1Fq49e23Y2kFA4XOEZkS0o%3D&sr=b',
+    [string]$agentURI,
     #Domain group to add to remote desktop users for Server 2016 installs
-    [string]$groupToAdd='va.gov\cldwins_ecs_admin_prod'
+    [string]$groupToAdd
 )
 
 #Function to write output to log file @ C:\Windows\Temp\ProvisioningScript.log
