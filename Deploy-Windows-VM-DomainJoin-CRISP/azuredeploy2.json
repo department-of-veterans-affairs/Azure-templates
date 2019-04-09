@@ -1,0 +1,255 @@
+{
+"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "location": {
+        "type": "string",
+        "allowedValues":
+        [
+            "usgovvirginia",            
+            "usgovtexas",
+            "usgovarizona"
+        ]
+    },
+    "numberOfServersToDeploy": {
+      "type": "int",
+      "metadata": {
+          "description": "Number of servers to deploy"
+      }
+    },    
+    "vmName": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the VM"
+            }
+    },
+    "vmStartInstanceSuffix": {
+      "type": "int",        
+      "metadata": {
+          "description": "Defines the number by which the VMs will be labeled. Should match the environment, i.e. DEVTEST would start at 900"
+      }  
+    },
+    "vmSize": {
+        "type": "string",
+        "defaultValue": "Standard_D2_v2"
+    },
+    "vmAdminUsername": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the local admin account"
+        }
+    },
+    "vmAdminPassword": {
+        "type": "securestring",
+        "metadata": {
+            "description": "Password for the local admin account"
+        }
+    },
+    "ouPath": {
+        "type": "string",        
+        "metadata": {
+        "description": "For Example: OU=ProjectXYZ,OU=Servers,DC=DOMAIN,DC=GOV"
+        }
+    },
+    "keyVaultName": {
+        "type": "string",        
+        "metadata": {
+            "description": "Name of the key vault for the domain join credentials"
+        }
+    },
+    "keyVaultSecretName": {
+        "type": "string",
+        "metadata": {
+            "description": "Secret name for the domain join user account password"
+        }
+    },
+    "keyVaultResourceGroupName": {
+        "type": "string",
+        "metadata": {
+            "description": "Resource group where the key vault is located"
+        }
+    }, 
+    "domainToJoin": {
+        "type": "string",
+        "defaultValue": "va.gov",
+        "metadata": {
+            "description": "Name of the domain to join."
+        }
+    },
+    "domainUserName": {
+      "type": "string"
+    },   
+    "crispComponentURI": {
+        "type": "string",
+        "metadata": {
+            "description": "Location of the CRISP package. Should be the SAS token URL for ChocolateyPackages.zip"
+        }
+    },   
+    "domainGroupToAdd": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the domain group to add to remote desktop users"
+        }
+    },    
+    "subnetName": {
+        "type": "string",
+        "metadata": {
+            "description": "Subnet to join"
+        }
+    },
+    "existingVNETName":{
+        "type": "string",
+        "metadata": {
+            "description": "Name of the virtual network assigned to your project"
+        }
+    },
+    "existingVNETResourceGroupName": {
+        "type": "string",
+        "metadata": {
+            "description": "Resource Group name where the virtual network is located"
+        }
+    },
+    "windowsOSVersion": {
+        "type": "string",
+        "metadata": {
+            "description": "Windows version to deploy"
+        },
+        "allowedValues":
+        [
+          "2012-R2-Datacenter",
+          "2016-Datacenter"
+        ]
+      },        
+    "osDiskStorageType": {
+        "type": "string",
+        "metadata": {
+            "description": "Storage type for OS disk"
+        },
+        "allowedValues": [
+            "Standard_LRS",
+            "Premium_LRS"
+        ]
+    },
+    "keyvaultSubscriptionId": {
+        "type": "string",
+        "metadata": {
+            "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
+        }
+    }    
+},
+"variables": {
+    "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",
+    "domainUserName": "[parameters('keyVaultSecretName')]",                  
+    "domainJoinOptions": "3",
+    "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
+    "provisioningScriptFolder": ".",
+    "provisioningScriptFileName": "VMProvisioningScript.ps1",
+    "provisioningScriptURI": "[concat(variables('artifactsLocation'), 'scripts/VMProvisioningScript.ps1']"
+    },
+    "resources":
+    [
+      {
+        "apiVersion": "2016-02-01",
+        "name": "vmTemplate",
+        "type": "Microsoft.Resources/deployments",
+        "dependsOn": [ ],
+        "properties":
+        {
+          "mode": "Incremental",
+          "templateLink":
+          {
+            "uri": "[concat(variables('artifactsLocation'), 'deployVM.json']",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters":
+          {
+            "location":
+            {
+              "value": "[parameters('location')]"
+            },
+            "provisioningScriptFolder":
+            {
+              "value": "[variables('provisioningScriptFolder')]"
+            },
+            "provisioningScriptFileName":
+            {
+              "value": "[variables('provisioningScriptFileName')]"
+            },
+            "provisioningScriptURL":
+            {
+              "value": "[variables('provisioningScriptURI')]"
+            },
+            "vmAdminUsername":
+            {
+                "value": "[parameters('vmAdminUsername')]"
+            },
+            "vmAdminPassword":
+            {
+                "value": "[parameters('vmAdminPassword')]"
+            },
+            "domainToJoin":
+            {
+              "value": "[parameters('domainToJoin')]"
+            },
+            "vmName":
+            {
+              "value": "[parameters('vmName')]"
+            },            
+            "vmSize":
+            {
+              "value": "[parameters('vmSize')]"
+            },
+            "domainUsername":
+            {
+                "value": "[parameters('domainUserName')]"
+              },
+            "domainPassword":
+            {
+                "reference": {
+                    "keyVault": {
+                      "id": "[variables('keyVaultRef')]"
+                    },
+                    "secretName": "[parameters('keyVaultSecretName')]"
+                  }
+            },
+            "ouPath":
+            {
+              "value": "[parameters('ouPath')]"
+            },            
+            "osDiskStorageType":
+            {
+              "value": "[parameters('osDiskStorageType')]"
+            },
+            "numberOfServersToDeploy": {
+                "value": "[parameters('numberOfServersToDeploy')]"
+            },
+            "vmStartInstancePrefix": {
+                "value": "[parameters('vmStartInstanceSuffix')]"
+            },
+            "subnetName": {
+                "value": "[parameters('subnetName')]"
+            },
+            "existingVNETName":{
+                "value": "[parameters('existingVNETName')]"
+            },
+            "existingVNETResourceGroupName": {
+                "value": "[parameters('existingVNETResourceGroupName')]"
+            },
+            "crispComponentURI": {
+                "value": "[parameters('crispComponentURI')]"
+            },
+            "domainGroupToAdd": {
+                "value": "[parameters('domainGroupToAdd')]"
+            },
+            "windowsOSVersion": {
+                "value": "[parameters('windowsOSVersion')]"
+            }           
+          }
+        }
+      }
+    ],
+    "outputs":
+    {
+  
+    }
+  }
