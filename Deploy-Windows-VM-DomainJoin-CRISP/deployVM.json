@@ -175,7 +175,7 @@
             "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_OSdisk')]",
             "managedDisk":
             {
-              "storageAccountType": "[parameters('storageSku')]"
+              "storageAccountType": "[parameters('osDiskStorageType')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
