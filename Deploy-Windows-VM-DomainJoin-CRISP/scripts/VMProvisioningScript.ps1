@@ -1,9 +1,25 @@
-param (
+﻿param (
     #Location of CRISP components
     [string]$agentURI,
     #Domain group to add to remote desktop users for Server 2016 installs
     [string]$groupToAdd
 )
+
+add-type @"
+    using System.Net;
+    using System.Security.Cryptography.X509Certificates;
+    public class TrustAllCertsPolicy : ICertificatePolicy {
+        public bool CheckValidationResult(
+            ServicePoint srvPoint, X509Certificate certificate,
+            WebRequest request, int certificateProblem) {
+            return true;
+        }
+    }
+"@
+
+$AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+[System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
 #Function to write output to log file @ C:\Windows\Temp\ProvisioningScript.log
 function WriteLog {
@@ -56,33 +72,56 @@ $certsToImport=Get-ChildItem $certsTemp
 #Import certs to Root store
 ForEach ($cert in $certsToImport){
 
-    write-host $cert.Name
-
         $certDetails = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
 
         $certDetails.Import($certsTemp+'\'+$cert.Name)
 
-        #Check to see if the certificate is already imported into the Root store
-        if (-not (Get-Childitem cert:\LocalMachine\Root | Where-Object {$_.Thumbprint -eq $certDetails.Thumbprint})) {
+        if ($certDetails.SerialNumber -eq '28d5cb40101c62a44627e2d8c17f1ce9' -or $certDetails.SerialNumber -eq '037f7dcefd2991ac40cba54ee229be84'){
 
-            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store "Root", "LocalMachine"
+            #Check to see if the certificate is already imported into the Root store
+            if (-not (Get-Childitem cert:\LocalMachine\Root | Where-Object {$_.Thumbprint -eq $certDetails.Thumbprint})) {
 
-            #Open the Root store in Read/Write mode
-            $store.Open("ReadWrite")
+                $store = New-Object System.Security.Cryptography.X509Certificates.X509Store "Root", "LocalMachine"
 
-            #Import the cert
-            $store.Add($certsTemp+'\'+$cert)
+                #Open the Root store in Read/Write mode
+                $store.Open("ReadWrite")
 
-            #Close the store
-            $store.Close()
+                #Import the cert
+                $store.Add($certsTemp+'\'+$cert)
 
-            WriteLog "$cert has been imported into the Root store"
-           }
+                #Close the store
+                $store.Close()
 
-            else {
-                WriteLog "$cert was already present in the Root Certificate Store"
-           }
-    }
+                WriteLog "$cert has been imported into the Root store"
+               }
+
+                else {
+                    WriteLog "$cert was already present in the Root Certificate Store"
+               }
+        }
+        #if (-not($certDetails.SerialNumber -eq '28d5cb40101c62a44627e2d8c17f1ce9' -or $certDetails.SerialNumber -eq '037f7dcefd2991ac40cba54ee229be84')){
+            elseif (-not (Get-Childitem cert:\LocalMachine\CA | Where-Object {$_.Thumbprint -eq $certDetails.Thumbprint})) {
+         
+                $store = New-Object System.Security.Cryptography.X509Certificates.X509Store "CA", "LocalMachine"
+
+                    #Open the Root store in Read/Write mode
+                    $store.Open("ReadWrite")
+
+                    #Import the cert
+                    $store.Add($certsTemp+'\'+$cert)
+
+                    #Close the store
+                    $store.Close()
+
+                    WriteLog "$cert has been imported into the CA store"
+                    }
+               
+                    else {
+                        WriteLog "$cert was already present in the CA Certificate Store"
+                   }
+      
+                 
+        }
 
 #Extracting Zip File
 unzip "$agentsTemp\agents.zip" $agentsTemp
@@ -95,7 +134,7 @@ Invoke-Expression $agentsTemp\chocolatey\chocolateyInstall.ps1
 $nupkgs=Get-ChildItem $agentsTemp | where {$_.name -like '*.nupkg'}
 
 #Install CRISP components
-Set-Location $sagentsTemp
+Set-Location $agentsTemp
 
 #Loop through array and install CRISP
 ForEach ($pkg in $nupkgs){ 
@@ -105,12 +144,15 @@ ForEach ($pkg in $nupkgs){
 
 #Cleanup after install
 Remove-Item -path $certsTemp -Recurse
+
+Set-Location -path 'C:\Temp'
+
 Remove-Item -path $agentsTemp -Recurse
 
 #Add domain group for Server 2016 installs
 if ((Get-WmiObject -Class Win32_OperatingSystem).Version -ge "10*" -and (Get-WmiObject -Class Win32_OperatingSystem).Caption -like "*2016*") {
 
-        WriteLog "Server 2016 Detected. Adding local group members"
+        WriteLog "Server 2016 Detected. Adding group $groupToAdd to local groups"
             
         Add-LocalGroupMember -Group 'Administrators' -Member $groupToAdd
         Add-LocalGroupMember -Group 'Remote Desktop Users' -Member $groupToAdd
