@@ -1,10 +1,10 @@
 # Deploy VM to Azure with CRISP Agents
 
 This template deploys a VM and then installs the following CRISP agents on the VM:
-* McAfee Agent - 4.8.0.2001
-* BigFix - 9.2.6.94
+* McAfee Agent - 5.5
+* BigFix - 9.5
 * EnCase - 7.07
-* SafeNet - 5.1.88.0
+* SafeNet - 10.2
 * WinCollect - 7.2.5.27
 
 ### REQUIREMENTS
