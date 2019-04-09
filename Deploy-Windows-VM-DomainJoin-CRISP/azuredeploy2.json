@@ -144,7 +144,7 @@
     "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
     "provisioningScriptFolder": ".",
     "provisioningScriptFileName": "VMProvisioningScript.ps1",
-    "provisioningScriptURI": "[concat(variables('artifactsLocation'), 'scripts/VMProvisioningScript.ps1')]"
+    "provisioningScriptURI": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/scripts/VMProvisioningScript.ps1"
     },
     "resources":
     [
