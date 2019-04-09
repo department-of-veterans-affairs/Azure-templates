@@ -135,7 +135,10 @@
         "metadata": {
             "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
         }
-    }    
+    },
+    "provisioningScriptURI": {
+      "type": "string"
+    }      
 },
 "variables": {
     "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",
@@ -143,8 +146,7 @@
     "domainJoinOptions": "3",
     "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
     "provisioningScriptFolder": ".",
-    "provisioningScriptFileName": "VMProvisioningScript.ps1",
-    "provisioningScriptURI": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/scripts/VMProvisioningScript.ps1"
+    "provisioningScriptFileName": "VMProvisioningScript.ps1"    
     },
     "resources":
     [
@@ -177,7 +179,7 @@
             },
             "provisioningScriptURL":
             {
-              "value": "[variables('provisioningScriptURI')]"
+              "value": "[parameters('provisioningScriptURI')]"
             },
             "vmAdminUsername":
             {
@@ -253,4 +255,3 @@
   
     }
   }
-    
