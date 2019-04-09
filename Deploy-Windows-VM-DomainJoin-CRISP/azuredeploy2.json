@@ -144,7 +144,7 @@
     "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
     "provisioningScriptFolder": ".",
     "provisioningScriptFileName": "VMProvisioningScript.ps1",
-    "provisioningScriptURI": "[concat(variables('artifactsLocation'), 'scripts/VMProvisioningScript.ps1']"
+    "provisioningScriptURI": "[concat(variables('artifactsLocation'), 'scripts/VMProvisioningScript.ps1')]"
     },
     "resources":
     [
