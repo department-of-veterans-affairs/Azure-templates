@@ -1,4 +1,4 @@
-﻿param (
+param (
     #Location of CRISP components
     [string]$agentURI,
     #Domain group to add to remote desktop users for Server 2016 installs
