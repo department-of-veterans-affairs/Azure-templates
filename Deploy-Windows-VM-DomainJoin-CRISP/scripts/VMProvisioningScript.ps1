@@ -1,4 +1,4 @@
-﻿param (
+param (
     #Location of CRISP components
     [string]$agentURI,
     #Domain group to add to remote desktop users for Server 2016 installs
@@ -111,13 +111,13 @@ Remove-Item -path $agentsTemp -Recurse
 if ((Get-WmiObject -Class Win32_OperatingSystem).Version -ge "10*" -and (Get-WmiObject -Class Win32_OperatingSystem).Caption -like "*2016*") {
 
         WriteLog "Server 2016 Detected. Adding local group members"
-                    
+            
         Add-LocalGroupMember -Group 'Administrators' -Member $groupToAdd
         Add-LocalGroupMember -Group 'Remote Desktop Users' -Member $groupToAdd
         }
-                    
+            
 ElseIf ((Get-WmiObject -Class Win32_OperatingSystem).Version -like "6.3*" -and (Get-WmiObject -Class Win32_OperatingSystem).Caption -like "*2012 R2*") {
        WriteLog "Windows Server 2012 R2 detected."
        WriteLog "Not adding any local group/accounts..."
     }
-}
+        
