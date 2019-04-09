@@ -158,7 +158,7 @@
           "mode": "Incremental",
           "templateLink":
           {
-            "uri": "[concat(variables('artifactsLocation'), 'deployVM.json']",
+            "uri": "[concat(variables('artifactsLocation'), 'deployVM.json')]",
             "contentVersion": "1.0.0.0"
           },
           "parameters":
