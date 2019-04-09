@@ -28,6 +28,6 @@ To deploy the template, you will need to provide the following parameters:
 - OU Path (This is the Organizational Unit where the VM will be added when it is joined to the domain)
 - CRISP Component URI (Location of the CRISP components. See deployment doc for details)
 
-<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FAzure-templates%2Fmaster%2FDeploy-Windows-VM-DomainJoin-CRISP%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FAzure-templates%2Fmaster%2FDeploy-Windows-VM-DomainJoin-CRISP%2Fazuredeploy2.json" target="_blank">
     <img src="https://azuredeploy.net/AzureGov.png"/>
 </a>
