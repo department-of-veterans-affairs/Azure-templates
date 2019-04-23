@@ -9,7 +9,7 @@ To deploy the template, you will need to provide the following parameters:
 - VM Name (Use the proper naming convention documented @ https://docs.ec.va.gov/Enterprise-Cloud/Microsoft-Azure/Azure-Naming-Standards.html)
 - VM Start Instance Suffix (The number at which to begin numbering your VM. Should match the environment, i.e. DEV, PROD)
 - VM Size (Default is Standard_D2_v2)
-- SQL Version and OS (See [SQL VMs on Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sql/virtual-machines-windows-sql-server-iaas-overview#payasyougo for more details))
+- SQL Version and OS (See [SQL VMs on Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sql/virtual-machines-windows-sql-server-iaas-overview#payasyougo) for more details)
 - Number of Data Disks required
 - Data Disk Sizes
 - Data Disk Storage Type (Standard_LRS, Premium_LRS)
