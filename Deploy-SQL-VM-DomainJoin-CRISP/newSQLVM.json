@@ -123,14 +123,7 @@
     "rServicesEnabled": {
       "type": "string",
       "defaultValue": "false"
-    },  
-    "dataDiskSizes":{
-      "type": "array",
-      "metadata": {}
-    },
-    "dataDiskStorageType": {
-      "type": "string"
-    }
+    }    
   },
   "variables": {
     "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
@@ -214,19 +207,7 @@
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
-          },
-          "dataDisks": [
-            {
-                "caching": "ReadWrite",
-                "diskSizeGB": "[parameters('dataDiskSizes')]",
-                "lun": 0,
-                "name": "[concat(parameters('vmName'), parameters('vmStartInstancePrefix'), '_dataDisk')]",
-                "createOption": "Empty",
-                "managedDisk": {
-                  "storageAccountType": "[parameters('dataDiskStorageType')]"
-                }
-              }            
-          ]
+          }          
         },
         "networkProfile":
         {

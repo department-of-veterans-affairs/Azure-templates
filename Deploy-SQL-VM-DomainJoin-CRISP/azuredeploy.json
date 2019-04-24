@@ -175,21 +175,7 @@
     "rServicesEnabled": {
         "type": "string",
         "defaultValue": "false"
-    },      
-    "additionalDataDiskSize":{
-        "type": "int",
-        "defaultValue": 100,
-        "metadata": {}
-    },
-    "dataDiskStorageType": {
-        "type": "string",
-        "allowedValues": [
-            "Standard_LRS",
-            "Premium_LRS",
-            "StandardSSD_LRS",
-            "UltraSSD_LRS"
-        ]
-    }     
+    }    
 },
     "variables": {                
         "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-SQL-VM-DomainJoin-CRISP/",
@@ -307,14 +293,7 @@
             },            
             "rServicesEnabled": {
                 "value": "[parameters('rServicesEnabled')]"
-            },              
-            "dataDiskSizes": {
-                "value": "[parameters('additionalDataDiskSize')]"
-                
-            },
-            "dataDiskStorageType": {
-                "value": "[parameters('dataDiskStorageType')]"
-            }      
+            }            
           }
         }
       }
