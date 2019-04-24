@@ -182,6 +182,7 @@
     },
     "dataDiskSizes":{
         "type": "array",
+        "defaultValue": "100",
         "metadata": {}
     },
     "dataDiskStorageType": {
