@@ -1,0 +1,326 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters":   {
+    "location": {
+      "type": "string"
+    },
+    "vmName": {
+      "type": "string"
+    },    
+    "vmSize": {
+      "type": "string"
+    },
+    "vmAdminUsername": {
+      "type": "string"
+    },
+    "vmAdminPassword": {
+      "type": "securestring"
+    },
+    "domainToJoin": {
+      "type": "string"
+    },
+    "domainUsername": {
+      "type": "string"
+    },
+    "domainGroupToAdd": {
+      "type": "string"
+    },    
+    "numberOfServersToDeploy": {
+        "type": "int",
+        "metadata": {}
+    },
+    "crispComponentURI": {
+        "type": "string",
+        "metadata": {}
+    },
+    "provisioningScriptFolder": {
+      "type": "string"
+    },
+    "provisioningScriptFileName": {
+      "type": "string"
+    },
+    "provisioningScriptURL": {
+      "type": "string"
+    },
+    "domainPassword": {
+      "type": "securestring"
+    },
+    "ouPath": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Specifies an organizational unit (OU) for the domain account. Enter the full distinguished name of the OU in quotation marks. Example: 'OU=testOU; DC=domain; DC=Domain; DC=com"
+      }
+    }, 
+    "storageSku": {
+      "type": "string",
+      "allowedValues":
+      [
+        "Standard_LRS",
+        "Premium_LRS"
+      ]
+    },
+    "sqlOSVersion": {
+      "type": "string",
+      "metadata": {},
+      "allowedValues":
+      [
+        "SQL2012SP3-WS2012R2",
+        "SQL2012SP3-WS2012R2-BYOL",
+        "SQL2012SP4-WS2012R2",
+        "SQL2012SP4-WS2012R2-BYOL",
+        "SQL2014SP1-WS2012R2",
+        "SQL2014SP1-WS2012R2-BYOL",
+        "SQL2014SP2-WS2012R2",
+        "SQL2014SP2-WS2012R2-BYOL",
+        "sql2014sp3-ws2012r2",
+        "sql2014sp3-ws2012r2-byol",
+        "SQL2016-WS2012R2",
+        "SQL2016-WS2012R2-BYOL",
+        "SQL2016-WS2016",
+        "SQL2016-WS2016-BYOL",
+        "SQL2016SP1-WS2016",
+        "SQL2016SP1-WS2016-BYOL",
+        "SQL2016SP2-WS2016",
+        "SQL2016SP2-WS2016-BYOL",
+        "SQL2017-WS2016",
+        "SQL2017-WS2016-BYOL",        
+        "SQL2019-WS2016"
+      ]
+    },
+    "vmStartInstancePrefix": {
+      "type": "int",
+      "defaultValue": "1"
+      },
+    "subnetName": {
+      "type": "string",
+      "metadata": {}
+    },
+    "existingVNETName":{
+      "type": "string",
+      "metadata": {}
+    },
+    "existingVNETResourceGroupName": {
+      "type": "string",
+      "metadata": {}
+    },
+    "sqlConnectivityType": {
+      "type": "string"
+    },
+    "sqlPortNumber": {
+      "type": "int"
+    },
+    "sqlStorageWorkloadType": {
+      "type": "string",
+      "allowedValues": [
+        "GENERAL",
+        "OLTP",
+        "DW"
+      ],
+      "defaultValue": "GENERAL"
+    },       
+    "rServicesEnabled": {
+      "type": "string",
+      "defaultValue": "false"
+    }    
+  },
+  "variables": {
+    "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
+    "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]",
+    "domainJoinOptions": "3"        
+  },
+  "resources":
+  [
+    {
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC')]",
+        "type": "Microsoft.Network/networkInterfaces",
+        "location": "[parameters('location')]",
+        "apiVersion": "2016-03-30",
+        "dependsOn": [],
+        "copy": {
+            "name": "nicLoop",
+            "count": "[parameters('numberOfServersToDeploy')]"
+        },
+        "properties":
+        {
+          "ipConfigurations":
+          [
+            {
+              "name": "ipconfig1",
+              "properties":
+              {
+                "privateIPAllocationMethod": "Dynamic",                
+                "subnet": {
+                  "id": "[variables('subnetRef')]"
+                }
+              }
+            }
+          ]
+        }
+      },
+    {
+      "apiVersion": "2016-04-30-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('numberOfServersToDeploy')]"
+    },
+      "tags":
+      {
+        "displayName": "VirtualMachine"
+      },
+      "properties":
+      {
+        "hardwareProfile":
+        {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile":
+        {
+          "computerName": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
+          "adminUsername": "[parameters('vmAdminUsername')]",
+          "adminPassword": "[parameters('vmAdminPassword')]",
+          "windowsConfiguration":
+          {
+            "timeZone": "Central Standard Time",
+            "provisionVMAgent": true
+          }
+        },
+        "storageProfile":
+        {
+          "imageReference":
+          {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "[parameters('sqlOSVersion')]",
+            "sku": "Standard",
+            "version": "latest"
+          },
+          "osDisk":
+          {
+            "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_OSdisk')]",
+            "managedDisk":
+            {
+              "storageAccountType": "[parameters('storageSku')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }          
+        },
+        "networkProfile":
+        {
+          "networkInterfaces":
+          [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC'))]"
+            }
+          ]
+        },
+        "licenseType": "Windows_Server"
+      },
+      "resources":[
+      {
+        "apiVersion": "2016-04-30-preview",
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/joindomain')]",
+        "location": "[parameters('location')]",
+        "dependsOn":
+        [
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]"        
+        ],
+        "tags":
+        {
+          "displayName": "JsonADDomainExtension"
+        },
+        "properties":
+        {
+          "publisher": "Microsoft.Compute",
+          "type": "JsonADDomainExtension",
+          "typeHandlerVersion": "1.3",
+          "autoUpgradeMinorVersion": true,
+          "settings":
+          {
+            "Name": "[parameters('domainToJoin')]",
+            "OUPath": "[parameters('ouPath')]",
+            "User": "[concat(parameters('domainToJoin'), '\\', parameters('domainUsername'))]",
+            "Restart": "false",
+            "Options": "[variables('domainJoinOptions')]"
+          },
+          "protectedSettings":
+          {
+            "Password": "[parameters('domainPassword')]"
+          }
+        }
+      },
+      {
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/ProvisionVM')]",
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "location": "[parameters('location')]",
+        "apiVersion": "2017-12-01",
+        "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
+          "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex())), 'joindomain')]"
+         ],
+        "tags": {
+          "displayName": "Install CRISP Components"
+        },
+        "properties": {
+          "publisher": "Microsoft.Compute",
+          "type": "CustomScriptExtension",
+          "typeHandlerVersion": "1.4",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": [
+              "[parameters('provisioningScriptURL')]"
+            ],
+            "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', parameters('provisioningScriptFolder'), '/', parameters('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
+          }
+        }
+      },
+      {
+        "apiVersion": "2015-06-15",
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/SqlIaasExtension')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]"
+        ],
+        "properties": {
+          "type": "SqlIaaSAgent",
+          "publisher": "Microsoft.SqlServer.Management",
+          "typeHandlerVersion": "1.2",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "AutoTelemetrySettings": {
+              "Region": "[parameters('location')]"
+            },
+            "AutoPatchingSettings": {
+              "PatchCategory": "WindowsMandatoryUpdates",
+              "Enable": false,
+              "DayOfWeek": "Sunday",
+              "MaintenanceWindowStartingHour": "2",
+              "MaintenanceWindowDuration": "60"
+            },
+            "ServerConfigurationsManagementSettings": {
+              "SQLConnectivityUpdateSettings": {
+              "ConnectivityType": "[parameters('sqlConnectivityType')]",
+              "Port": "[parameters('sqlPortNumber')]"
+              },
+              "SQLWorkloadTypeUpdateSettings": {
+                "SQLWorkloadType": "[parameters('sqlStorageWorkloadType')]"
+            }
+            },            
+            "AdditionalFeaturesServerConfigurations": {
+              "IsRServicesEnabled": "[parameters('rServicesEnabled')]"
+            }
+          }
+        }
+      }
+    ]
+    }       
+  ],
+  "outputs": {
+  }
+}
