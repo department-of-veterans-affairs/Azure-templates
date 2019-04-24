@@ -108,18 +108,7 @@
         "metadata": {
             "description": "Resource Group name where the virtual network is located"
         }
-    },
-    "windowsOSVersion": {
-        "type": "string",
-        "metadata": {
-            "description": "Windows version to deploy"
-        },
-        "allowedValues":
-        [
-          "2012-R2-Datacenter",
-          "2016-Datacenter"
-        ]
-      },        
+    },      
     "osDiskStorageType": {
         "type": "string",
         "metadata": {
@@ -135,10 +124,7 @@
         "metadata": {
             "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
         }
-    },
-    "provisioningScriptURI": {
-      "type": "string"    
-    },
+    },    
     "sqlOSVersion": {
         "type": "string",
         "metadata": {
@@ -210,8 +196,7 @@
 },
     "variables": {                
         "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-SQL-VM-DomainJoin-CRISP/",
-        "domainUserName": "[parameters('keyVaultSecretName')]",                  
-        "domainJoinOptions": "3",
+        "domainUserName": "[parameters('keyVaultSecretName')]",                          
         "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
         "provisioningScriptFolder": ".",
         "provisioningScriptFileName": "VMProvisioningScript.ps1"       
@@ -294,7 +279,7 @@
                 "value": "[parameters('numberOfServersToDeploy')]"
             },
             "vmStartInstancePrefix": {
-                "value": "[parameters('vmStartInstancePrefix')]"
+                "value": "[parameters('vmStartInstanceSuffix')]"
             },
             "subnetName": {
                 "value": "[parameters('subnetName')]"
