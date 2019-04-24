@@ -52,14 +52,7 @@
       "metadata": {
         "description": "Specifies an organizational unit (OU) for the domain account. Enter the full distinguished name of the OU in quotation marks. Example: 'OU=testOU; DC=domain; DC=Domain; DC=com"
       }
-    },
-    "domainJoinOptions": {
-      "type": "int",
-      "defaultValue": 3,
-      "metadata": {
-        "description": "Set of bit flags that define the join options. Default value of 3 is a combination of NETSETUP_JOIN_DOMAIN (0x00000001) & NETSETUP_ACCT_CREATE (0x00000002) i.e. will join the domain and create the account on the domain. For more information see https://msdn.microsoft.com/en-us/library/aa392154(v=vs.85).aspx"
-      }
-    },
+    }, 
     "storageSku": {
       "type": "string",
       "allowedValues":
@@ -145,7 +138,8 @@
   },
   "variables": {
     "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
-    "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]"        
+    "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]",
+    "domainJoinOptions": "3"        
   },
   "resources":
   [
@@ -225,21 +219,17 @@
             "caching": "ReadWrite",
             "createOption": "FromImage"
           },
-          "copy": [
+          "dataDisks": [
             {
-              "name": "dataDisks",
-              "count": "[parameters('numberOfDataDisks')]",
-              "input": {
                 "caching": "ReadWrite",
-                "diskSizeGB": "[parameters('dataDiskSizes')[copyIndex('dataDisks')]]",
-                "lun": "[copyIndex('dataDisks')]",
-                "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_dataDisk', copyIndex('dataDisks'))]",
+                "diskSizeGB": "[parameters('dataDiskSizes')]",
+                "lun": 0,
+                "name": "[concat(parameters('vmName'), parameters('vmStartInstancePrefix'), '_dataDisk')]",
                 "createOption": "Empty",
                 "managedDisk": {
                   "storageAccountType": "[parameters('dataDiskStorageType')]"
                 }
-              }
-            }
+              }            
           ]
         },
         "networkProfile":
@@ -279,7 +269,7 @@
             "OUPath": "[parameters('ouPath')]",
             "User": "[concat(parameters('domainToJoin'), '\\', parameters('domainUsername'))]",
             "Restart": "false",
-            "Options": "[parameters('domainJoinOptions')]"
+            "Options": "[variables('domainJoinOptions')]"
           },
           "protectedSettings":
           {

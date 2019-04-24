@@ -108,7 +108,7 @@
         "metadata": {
             "description": "Resource Group name where the virtual network is located"
         }
-    },      
+    },    
     "osDiskStorageType": {
         "type": "string",
         "metadata": {
@@ -124,7 +124,7 @@
         "metadata": {
             "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
         }
-    },    
+    },   
     "sqlOSVersion": {
         "type": "string",
         "metadata": {
@@ -175,13 +175,9 @@
     "rServicesEnabled": {
         "type": "string",
         "defaultValue": "false"
-    },  
-    "numberOfDataDisks": {
+    },      
+    "additionalDataDiskSize":{
         "type": "int",
-        "metadata": {}
-    },
-    "dataDiskSizes":{
-        "type": "array",
         "defaultValue": "100",
         "metadata": {}
     },
@@ -311,12 +307,9 @@
             },            
             "rServicesEnabled": {
                 "value": "[parameters('rServicesEnabled')]"
-            },  
-            "numberOfDataDisks": {
-                "value": "[parameters('numberOfDataDisks')]"
-            },
+            },              
             "dataDiskSizes": {
-                "value": "[parameters('dataDiskSizes')]"
+                "value": "[parameters('additionalDataDiskSize')]"
                 
             },
             "dataDiskStorageType": {
