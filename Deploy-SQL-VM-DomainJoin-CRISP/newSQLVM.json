@@ -124,10 +124,6 @@
       "type": "string",
       "defaultValue": "false"
     },  
-    "numberOfDataDisks": {
-      "type": "int",
-      "metadata": {}
-    },
     "dataDiskSizes":{
       "type": "array",
       "metadata": {}

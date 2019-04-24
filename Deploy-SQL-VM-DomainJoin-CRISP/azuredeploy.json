@@ -178,7 +178,7 @@
     },      
     "additionalDataDiskSize":{
         "type": "int",
-        "defaultValue": "100",
+        "defaultValue": 100,
         "metadata": {}
     },
     "dataDiskStorageType": {
