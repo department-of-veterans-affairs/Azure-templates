@@ -34,12 +34,6 @@
         "type": "string",
         "metadata": {}
     },
-    "provisioningScriptFolder": {
-      "type": "string"
-    },
-    "provisioningScriptFileName": {
-      "type": "string"
-    },
     "provisioningScriptURL": {
       "type": "string"
     },
@@ -96,7 +90,9 @@
   },
   "variables": {
     "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
-    "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]"        
+    "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]",
+    "provisioningScriptFolder": ".",
+    "provisioningScriptFileName": "VMProvisioningScript.ps1"           
   },
   "resources":
   [
@@ -246,7 +242,7 @@
             "fileUris": [
               "[parameters('provisioningScriptURL')]"
             ],
-            "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', parameters('provisioningScriptFolder'), '/', parameters('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
+            "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('provisioningScriptFolder'), '/', variables('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
           }
         }
       }

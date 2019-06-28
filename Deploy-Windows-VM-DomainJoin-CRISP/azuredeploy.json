@@ -138,12 +138,9 @@
     }
 },
 "variables": {
-    "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",
-    "domainUserName": "[parameters('keyVaultSecretName')]",                  
+    "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",    
     "domainJoinOptions": "3",
-    "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
-    "provisioningScriptFolder": ".",
-    "provisioningScriptFileName": "VMProvisioningScript.ps1"    
+    "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]", 
     },
     "resources":
     [
@@ -165,14 +162,6 @@
             "location":
             {
               "value": "[parameters('location')]"
-            },
-            "provisioningScriptFolder":
-            {
-              "value": "[variables('provisioningScriptFolder')]"
-            },
-            "provisioningScriptFileName":
-            {
-              "value": "[variables('provisioningScriptFileName')]"
             },
             "provisioningScriptURL":
             {
