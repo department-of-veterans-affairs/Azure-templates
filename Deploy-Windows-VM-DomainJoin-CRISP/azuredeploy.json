@@ -9,7 +9,8 @@
             "usgovvirginia",            
             "usgovtexas",
             "usgovarizona"
-        ]
+        ],
+        "defaultValue": "usgovvirginia"
     },
     "numberOfServersToDeploy": {
       "type": "int",
