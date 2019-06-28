@@ -71,7 +71,7 @@
         "2016-Datacenter"
       ]
     },
-    "vmStartInstancePrefix": {
+    "vmStartInstanceSuffix": {
       "type": "int",
       "defaultValue": "1"
       },
@@ -98,7 +98,7 @@
   "resources":
   [
     {
-        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC')]",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_NIC')]",
         "type": "Microsoft.Network/networkInterfaces",
         "location": "[parameters('location')]",
         "apiVersion": "2016-03-30",
@@ -128,10 +128,10 @@
     {
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
+      "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC')]"
+        "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_NIC')]"
       ],
       "copy": {
         "name": "vmLoop",
@@ -149,7 +149,7 @@
         },
         "osProfile":
         {
-          "computerName": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
+          "computerName": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]",
           "adminUsername": "[parameters('vmAdminUsername')]",
           "adminPassword": "[parameters('vmAdminPassword')]",
           "windowsConfiguration":
@@ -169,7 +169,7 @@
           },
           "osDisk":
           {
-            "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_OSdisk')]",
+            "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_OSdisk')]",
             "managedDisk":
             {
               "storageAccountType": "[parameters('osDiskStorageType')]"
@@ -183,7 +183,7 @@
           "networkInterfaces":
           [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_NIC'))]"
             }
           ]
         }        
@@ -192,11 +192,11 @@
       {
         "apiVersion": "2016-04-30-preview",
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/joindomain')]",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '/joindomain')]",
         "location": "[parameters('location')]",
         "dependsOn":
         [
-          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]"        
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]"        
         ],
         "tags":
         {
@@ -223,13 +223,13 @@
         }
       },
       {
-        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/ProvisionVM')]",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '/ProvisionVM')]",
         "type": "Microsoft.Compute/virtualMachines/extensions",
         "location": "[parameters('location')]",
         "apiVersion": "2017-12-01",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
-          "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex())), 'joindomain')]"
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]",
+          "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex())), 'joindomain')]"
          ],
         "tags": {
           "displayName": "Install CRISP Components"

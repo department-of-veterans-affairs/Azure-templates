@@ -9,5 +9,11 @@
         "vmSize": {
           "value": "Standard_D2_v2"
         },
+        "artifactsLocation": {
+          "value": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/scripts"
+        }      
+      },
+      "domainPassword": {
+        "value": "NULL"
+      }
     }
-}

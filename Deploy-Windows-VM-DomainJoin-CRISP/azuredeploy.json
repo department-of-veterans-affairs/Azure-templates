@@ -207,7 +207,7 @@
             "numberOfServersToDeploy": {
                 "value": "[parameters('numberOfServersToDeploy')]"
             },
-            "vmStartInstancePrefix": {
+            "vmStartInstanceSuffix": {
                 "value": "[parameters('vmStartInstanceSuffix')]"
             },
             "subnetName": {
