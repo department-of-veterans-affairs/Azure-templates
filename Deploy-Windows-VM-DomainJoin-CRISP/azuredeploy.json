@@ -138,6 +138,9 @@
     },
     "provisioningScriptURI": {
       "type": "string"
+    },
+    "linkedTemplateURI": {
+        "type": "string"
     }      
 },
 "variables": {
@@ -160,7 +163,7 @@
           "mode": "Incremental",
           "templateLink":
           {
-            "uri": "[concat(variables('artifactsLocation'), 'deployVM.json')]",
+            "uri": "[parameters('linkedTemplateURI')]",
             "contentVersion": "1.0.0.0"
           },
           "parameters":
@@ -179,7 +182,7 @@
             },
             "provisioningScriptURL":
             {
-              "value": "[parameters('provisioningScriptURI')]"
+              "value": "[concat(variables('artifactslocation'), '/scripts/VMProvisioningScript.ps1')]"
             },
             "vmAdminUsername":
             {
