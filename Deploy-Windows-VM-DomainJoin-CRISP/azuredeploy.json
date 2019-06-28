@@ -136,7 +136,7 @@
             "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
         }
     },
-    "vmProvisioningScriptURL": {
+    "provisioningScriptURL": {
         "type": "string",
         "defaultValue": "[concat(variables('artifactslocation'), '/scripts/VMProvisioningScript.ps1')]"
     }
