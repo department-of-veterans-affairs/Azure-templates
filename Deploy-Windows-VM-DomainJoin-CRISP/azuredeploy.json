@@ -135,13 +135,7 @@
         "metadata": {
             "description": "SubscriptionId for the keyvault where domain join creds are located. See internal deployment guide for details"
         }
-    },
-    "provisioningScriptURI": {
-      "type": "string"
-    },
-    "linkedTemplateURI": {
-        "type": "string"
-    }      
+    }
 },
 "variables": {
     "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",
@@ -163,7 +157,7 @@
           "mode": "Incremental",
           "templateLink":
           {
-            "uri": "[parameters('linkedTemplateURI')]",
+            "uri": "[concat(variables('artifactsLocation'), 'azuredeploy.json')]",
             "contentVersion": "1.0.0.0"
           },
           "parameters":
