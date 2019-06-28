@@ -34,6 +34,15 @@
         "type": "string",
         "metadata": {}
     },
+    "provisioningScriptFolder": {
+      "type": "string"
+    },
+    "provisioningScriptFileName": {
+      "type": "string"
+    },
+    "provisioningScriptURL": {
+      "type": "string"
+    },
     "domainPassword": {
       "type": "securestring"
     },
@@ -68,7 +77,7 @@
         "2016-Datacenter"
       ]
     },
-    "vmStartInstanceSuffix": {
+    "vmStartInstancePrefix": {
       "type": "int",
       "defaultValue": "1"
       },
@@ -83,19 +92,18 @@
     "existingVNETResourceGroupName": {
       "type": "string",
       "metadata": {}
-    }    
+    }   
   },
   "variables": {
-    "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",    
     "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
     "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]",
-    "provisioningScriptFolder": ".",
-    "provisioningScriptFileName": "VMProvisioningScript.ps1"           
+    "configurationModeFrequencyMins": "240",
+    "refreshFrequencyMins": "720"
   },
   "resources":
   [
     {
-        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_NIC')]",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC')]",
         "type": "Microsoft.Network/networkInterfaces",
         "location": "[parameters('location')]",
         "apiVersion": "2016-03-30",
@@ -125,10 +133,10 @@
     {
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]",
+      "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_NIC')]"
+        "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC')]"
       ],
       "copy": {
         "name": "vmLoop",
@@ -146,7 +154,7 @@
         },
         "osProfile":
         {
-          "computerName": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]",
+          "computerName": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
           "adminUsername": "[parameters('vmAdminUsername')]",
           "adminPassword": "[parameters('vmAdminPassword')]",
           "windowsConfiguration":
@@ -166,7 +174,7 @@
           },
           "osDisk":
           {
-            "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_OSdisk')]",
+            "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_OSdisk')]",
             "managedDisk":
             {
               "storageAccountType": "[parameters('osDiskStorageType')]"
@@ -180,20 +188,20 @@
           "networkInterfaces":
           [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '_NIC'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '_NIC'))]"
             }
           ]
         }        
       },
-      "resources":[
+      "resources":[      
       {
         "apiVersion": "2016-04-30-preview",
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '/joindomain')]",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/joindomain')]",
         "location": "[parameters('location')]",
         "dependsOn":
         [
-          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]"        
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]"        
         ],
         "tags":
         {
@@ -220,13 +228,13 @@
         }
       },
       {
-        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()), '/ProvisionVM')]",
+        "name": "[concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()), '/ProvisionVM')]",
         "type": "Microsoft.Compute/virtualMachines/extensions",
         "location": "[parameters('location')]",
         "apiVersion": "2017-12-01",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex()))]",
-          "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'), add(parameters('vmStartInstanceSuffix'), copyIndex())), 'joindomain')]"
+          "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex()))]",
+          "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'), add(parameters('vmStartInstancePrefix'), copyIndex())), 'joindomain')]"
          ],
         "tags": {
           "displayName": "Install CRISP Components"
@@ -238,14 +246,12 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[concat(variables('artifactsLocation'), 'scripts/', variables('provisioningScriptFileName'))]"
+              "[parameters('provisioningScriptURL')]"
             ],
-            "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('provisioningScriptFolder'), '/', variables('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
+            "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', parameters('provisioningScriptFolder'), '/', parameters('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
           }
         }
       }
-    ]
-    }       
   ],
   "outputs": {
   }
