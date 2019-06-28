@@ -89,6 +89,7 @@
     }    
   },
   "variables": {
+    "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",    
     "vnetRef": "[resourceId(subscription().subscriptionId, parameters('existingVNETResourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",     
     "subnetRef": "[concat(variables('vnetRef'), '/subnets/', parameters('subnetName'))]",
     "provisioningScriptFolder": ".",
@@ -240,7 +241,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[parameters('provisioningScriptURL')]"
+              "[concat(variables('artifactsLocation'), 'scripts/', variables('provisioningScriptFileName'))]"
             ],
             "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('provisioningScriptFolder'), '/', variables('provisioningScriptFileName'), ' ', '\"', parameters('crispComponentURI'),'\"', ' ', parameters('domainGroupToAdd'))]"
           }
