@@ -34,9 +34,6 @@
         "type": "string",
         "metadata": {}
     },
-    "provisioningScriptURL": {
-      "type": "string"
-    },
     "domainPassword": {
       "type": "securestring"
     },
