@@ -11,6 +11,6 @@ This template deploys a VM and then installs the following CRISP agents on the V
 1. Three digit program code.
 2. Program onboarding into Azure (i.e. Resource Groups created).
 
-<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FAzure-templates%2Fmaster%2FDeploy-Windows-VM-CRISP%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdepartment-of-veterans-affairs%2FAzure-templates%2Fmaster%2FDeploy-Windows-VM-with-CRISP%2Fazuredeploy.json" target="_blank">
     <img src="https://azuredeploy.net/AzureGov.png"/>
 </a>
