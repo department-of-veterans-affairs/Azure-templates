@@ -151,7 +151,7 @@
         }
     },
     "variables": {
-        "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-CRISP/",
+        "artifactsLocation": "https://raw.githubusercontent.com/department-of-veterans-affairs/Azure-templates/master/Deploy-Windows-VM-DomainJoin-AvailabilitySet/",
         "domainUserName": "[parameters('keyVaultSecretName')]",
         "domainJoinOptions": "3",
         "keyVaultRef": "[concat('/subscriptions/', parameters('keyvaultSubscriptionId'), '/resourceGroups/', parameters('keyVaultResourceGroupName'), '/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
@@ -167,7 +167,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[parameters('linkedTemplateURI')]",
+                    "uri": "[concat(variables['artifactsLocation'], 'deployVM.json']",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
